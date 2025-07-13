@@ -3,6 +3,7 @@ __pycache__
 *.pyc
 .vscode
 .env
-thaaitour.db
+thaitour.db
 *.sqlite
 *.sqlite3
+.env.example
