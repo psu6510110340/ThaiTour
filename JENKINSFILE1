@@ -15,8 +15,6 @@ pipeline {
                     steps {
                         echo 'Running unit tests...'
                         sh 'sleep 5'
-                        sh 'echo "All tests passed!" > results.txt'
-                        archiveArtifacts artifacts: 'results.txt', fingerprint: true
                     }
                 }
                 stage('Integration Tests') {
@@ -25,6 +23,12 @@ pipeline {
                         sh 'sleep 5'
                     }
                 }
+            }
+        }
+        stage('Test Results') {
+            steps {
+                sh 'echo "All tests passed!" > results.txt'
+                archiveArtifacts artifacts: 'results.txt', fingerprint: true
             }
         }
         stage('Approval') {
