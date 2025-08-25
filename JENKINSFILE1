@@ -2,25 +2,46 @@ pipeline {
     agent any
     parameters {
         booleanParam(name: 'RUN_DEPLOY', defaultValue: true, description: 'Should we deploy?')
+        choice(name: 'ENVIRONMENT', choices: ['dev', 'staging', 'prod'], description: 'Select target environment')
     }
     stages {
         stage('Build') {
             steps {
                 echo 'Building application...'
+                sh 'sleep 2'
             }
         }
         stage('Test in Parallel') {
+            when {
+                expression { currentBuild.currentResult == 'SUCCESS' }
+            }
             parallel {
                 stage('Unit Tests') {
                     steps {
                         echo 'Running unit tests...'
-                        sh 'sleep 5'
+                        sh 'sleep 2'
                     }
                 }
                 stage('Integration Tests') {
                     steps {
                         echo 'Running integration tests...'
-                        sh 'sleep 5'
+                        sh 'sleep 2'
+                    }
+                }
+            }
+        }
+        stage('Simulate Testing') {
+            parallel {
+                stage('Linux Tests') {
+                    steps {
+                        echo 'Simulating tests on Linux...'
+                        sh 'sleep 1'
+                    }
+                }
+                stage('Windows Tests') {
+                    steps {
+                        echo 'Simulating tests on Windows...'
+                        sh 'sleep 1'
                     }
                 }
             }
@@ -32,6 +53,12 @@ pipeline {
             }
         }
         stage('Approval') {
+            when {
+                expression { return params.RUN_DEPLOY }
+            }
+            options {
+                timeout(time: 2, unit: 'MINUTES') // auto fail if no approval
+            }
             steps {
                 input "Do you want to proceed with deployment?"
             }
@@ -41,7 +68,7 @@ pipeline {
                 expression { return params.RUN_DEPLOY }
             }
             steps {
-                echo 'Deploying application...'
+                echo "Deploying application to ${params.ENVIRONMENT} environment..."
             }
         }
     }
